@@ -59,10 +59,17 @@ public class User
 					//System.out.println(user);System.out.println(password);
 				}
 				
-				if ( user.equals(usuario) && password.equals(contrasena) )
+				if ( user != null && password != null )
 				{
-					correcto = true;
+					if ( user.equals(usuario) && password.equals(contrasena) )
+					{
+						correcto = true;
+					}
+				}else
+				{
+					
 				}
+				
 				
 			}//fin try
 			catch ( SQLException excepcionSql )
@@ -76,7 +83,7 @@ public class User
 				{
 					conjuntoResultados.close();
 					actualiza.close();
-					conecta.close();
+					//conecta.close();
 				}
 				catch ( Exception excepcion )
 				{
@@ -88,40 +95,39 @@ public class User
 		
 		
 		//Incorpora al usuario a la base de datos
-		public boolean registrar (String usuario, String contrasena)
+		public void registro(String usuario, String contrasena)
 		{
-			boolean correcto = false;
 			
-			//Comprueba si el usuario ya existe. Si no existe, se crea
-			if ( this.existe( usuario ) == false )
+			
+			try
+			{
+				String sql = "insert into usuarios(usuario, pass) values(?,?)";
+				actualiza = conecta.prepareStatement(sql);
+				actualiza.setString(1, usuario);
+				actualiza.setString(2, contrasena);
+				conjuntoResultados = actualiza.executeQuery();
+				
+			}//fin try
+			catch ( SQLException excepcionSql )
+			{
+				excepcionSql.printStackTrace();
+				
+			}
+			finally
 			{
 				try
 				{
-					consulta = conecta.createStatement();
-					conjuntoResultados = consulta.executeQuery("insert");
-					correcto = true;
-				}//fin try
-				catch ( SQLException excepcionSql )
-				{
-					excepcionSql.printStackTrace();
+					conjuntoResultados.close();
+					actualiza.close();
+					//conecta.close();
 				}
-				finally
+				catch ( Exception excepcion )
 				{
-					try
-					{
-						conjuntoResultados.close();
-						consulta.close();
-						conecta.close();
-					}
-					catch ( Exception excepcion )
-					{
-						excepcion.printStackTrace();
-					}
-				}//fin finally
-			}
-			return correcto;
+					excepcion.printStackTrace();
+				}
+			}//fin finally
 			
-		}//fin registrar
+		}//fin usuario
 		
 		
 		//Comprueba si existe el usuario en la base de datos
@@ -131,16 +137,18 @@ public class User
 			String user = null;
 			try
 			{
-				consulta = conecta.createStatement();
-				conjuntoResultados = consulta.executeQuery("select deptno,dname from dept");
+				String sql = "select usuario from usuarios where usuario=?";
+				actualiza = conecta.prepareStatement(sql);
+				actualiza.setString(1, usuario);
+				conjuntoResultados = actualiza.executeQuery();
 				
 				while ( conjuntoResultados.next() )
 				{
-					user = conjuntoResultados.getString("deptno");
+					user = conjuntoResultados.getString("usuario");
 					
 				}
 				
-				if ( user == usuario  )
+				if ( user != null  )
 				{
 					correcto = true;
 				}
@@ -155,8 +163,8 @@ public class User
 				try
 				{
 					conjuntoResultados.close();
-					consulta.close();
-					conecta.close();
+					actualiza.close();
+					//conecta.close();
 				}
 				catch ( Exception excepcion )
 				{
